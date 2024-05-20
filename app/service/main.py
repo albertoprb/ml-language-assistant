@@ -33,7 +33,11 @@ app.mount(
     StaticFiles(directory="./app/assets"),
     name="assets"
 )
-
+app.mount(
+    "/preline",
+    StaticFiles(directory="./app/node_modules/preline"),
+    name="preline"
+)
 
 """
 Routes

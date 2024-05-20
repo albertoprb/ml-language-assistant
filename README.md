@@ -2,7 +2,7 @@
 
 * ...
 
-**⚠️ Considerations **
+**⚠️ Considerations**
 
 * ...
 

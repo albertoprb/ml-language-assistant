@@ -1,0 +1,7 @@
+# Don't update the data
+**/data/
+**/tmp/
+**/__pycache__/
+**/node_modules/
+.vscode/**
+desktop.ini
