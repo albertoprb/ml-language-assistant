@@ -3,10 +3,12 @@
     <div class="max-w-4xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
         <!-- Title -->
         <div class="text-center">
-            <svg class="w-20 h-auto mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-message-square">
+            <svg class="w-20 h-auto mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" class="lucide lucide-bot-message-square">
                 <path class="stroke-blue-600 dark:stroke-white" d="M12 6V2H8" />
-                <path class="stroke-blue-600 dark:stroke-white" d="m8 18-4 4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
+                <path class="stroke-blue-600 dark:stroke-white"
+                    d="m8 18-4 4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
                 <path class="stroke-blue-600 dark:stroke-white" d="M2 12h2" />
                 <path class="stroke-blue-600 dark:stroke-white" d="M9 11v2" />
                 <path class="stroke-blue-600 dark:stroke-white" d="M15 11v2" />
@@ -22,13 +24,15 @@
         </div>
         <!-- End Title -->
 
-        <ul class="mt-16 space-y-5">
+        <ul class="mt-16 space-y-5" id="chat-messages">
             <!-- How can I help you? -->
             <li class="flex gap-x-2 sm:gap-x-4">
-                <span class="flex-shrink-0 inline-flex items-center justify-center size-[38px] rounded-full bg-blue-600">
+                <span
+                    class="flex-shrink-0 inline-flex items-center justify-center size-[38px] rounded-full bg-blue-600">
                     <span class="text-sm font-medium text-white leading-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-message-square">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-bot-message-square">
                             <path d="M12 6V2H8" />
                             <path d="m8 18-4 4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
                             <path d="M2 12h2" />
@@ -43,23 +47,19 @@
                 <div
                     class="bg-white border border-gray-200 rounded-lg p-4 space-y-3 dark:bg-neutral-900 dark:border-neutral-700">
                     <h2 class="font-medium text-gray-800 dark:text-white">
-                        How can we help?
+                        Ich kann dir helfen, Deutsch zu lernen!
                     </h2>
                     <div class="space-y-1.5">
-                        <p class="mb-1.5 text-sm text-gray-800 dark:text-white">
-                            You can ask questions like:
+                        <p class="mb-3 text-sm text-gray-800 dark:text-white">
+                            Du kannst Fragen stellen wie:
                         </p>
                         <ul class="list-disc list-outside space-y-1.5 ps-3.5">
                             <li class="text-sm text-gray-800 dark:text-white">
-                                What's Preline UI?
+                                Fasse einen Artikel oder Podcast zusammen
                             </li>
 
                             <li class="text-sm text-gray-800 dark:text-white">
-                                How many Starter Pages & Examples are there?
-                            </li>
-
-                            <li class="text-sm text-gray-800 dark:text-white">
-                                Is there a PRO version?
+                                Stelle mir eine Frage zum Artikel oder Podcast
                             </li>
                         </ul>
                     </div>
@@ -67,26 +67,6 @@
                 <!-- End Card -->
             </li>
             <!-- End -->
-
-            <!-- User reply simple -->
-            <li class="max-w-2xl ms-auto flex justify-end gap-x-2 sm:gap-x-4">
-                <div class="grow text-end space-y-3">
-                    <!-- Card -->
-                    <div class="inline-block bg-blue-600 rounded-lg p-4 shadow-sm">
-                        <p class="text-sm text-white">
-                            what's preline ui?
-                        </p>
-                    </div>
-                    <!-- End Card -->
-                </div>
-
-                <span
-                    class="flex-shrink-0 inline-flex items-center justify-center size-[38px] rounded-full bg-gray-600">
-                    <span class="text-sm font-medium text-white leading-none">AZ</span>
-                </span>
-            </li>
-            <!-- End User reply simple -->
-            
         </ul>
     </div>
 
@@ -94,67 +74,70 @@
     <footer
         class="max-w-4xl mx-auto sticky bottom-0 z-10 bg-white border-t border-gray-200 pt-2 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6 lg:px-0 dark:bg-neutral-900 dark:border-neutral-700">
         <div class="flex justify-between items-center mb-3">
-                <div>
-                    <div class="text-end">
-                        <button type="button"
-                            class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
-                            Ask me a question about {{theme}}
-                        </button>
-                        <button type="button"
-                            class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
-                            Summmarize {{theme}}
-                        </button>
-                    </div>
+            <div>
+                <div class="text-end">
+                    <button type="button"
+                        class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
+                        Ask me a question about {{theme}}
+                    </button>
+                    <button type="button"
+                        class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
+                        Summmarize {{theme}}
+                    </button>
                 </div>
+            </div>
 
         </div>
 
         <!-- Input -->
-        <div class="relative">
-            <textarea
-                class="p-4 pb-12 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                placeholder="Ask me anything..."></textarea>
+        <form hx-post="/chats/{{chat.id}}/messages/" hx-swap="beforeend" hx-target="#chat-messages" hx-ext='json-enc'>
 
-            <!-- Toolbar -->
-            <div class="absolute bottom-px inset-x-px p-2 rounded-b-md bg-white dark:bg-neutral-900">
-                <div class="flex justify-between items-center">
-                    <!-- Button Group -->
-                    <div class="flex items-center">
-                        
+            <div class="relative">
+                <textarea
+                    class="p-4 pb-12 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                    placeholder="Ask me anything..." name="content"></textarea>
+
+                <!-- Toolbar -->
+                <div class="absolute bottom-px inset-x-px p-2 rounded-b-md bg-white dark:bg-neutral-900">
+                    <div class="flex justify-between items-center">
+                        <!-- Button Group -->
+                        <div class="flex items-center">
+
+                        </div>
+                        <!-- End Button Group -->
+
+                        <!-- Button Group -->
+                        <div class="flex items-center gap-x-1">
+                            <!-- Mic Button -->
+                            <button type="button"
+                                class="inline-flex flex-shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:text-blue-600 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-neutral-500 dark:hover:text-blue-500">
+                                <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
+                                    height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                    <line x1="12" x2="12" y1="19" y2="22" />
+                                </svg>
+                            </button>
+                            <!-- End Mic Button -->
+
+                            <!-- Send Button -->
+                            <button type="submit"
+                                class="inline-flex flex-shrink-0 justify-center items-center size-8 rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <svg class="flex-shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="16"
+                                    height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path
+                                        d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+                                </svg>
+                            </button>
+                            <!-- End Send Button -->
+                        </div>
+                        <!-- End Button Group -->
                     </div>
-                    <!-- End Button Group -->
-
-                    <!-- Button Group -->
-                    <div class="flex items-center gap-x-1">
-                        <!-- Mic Button -->
-                        <button type="button"
-                            class="inline-flex flex-shrink-0 justify-center items-center size-8 rounded-lg text-gray-500 hover:text-blue-600 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-neutral-500 dark:hover:text-blue-500">
-                            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                                <line x1="12" x2="12" y1="19" y2="22" />
-                            </svg>
-                        </button>
-                        <!-- End Mic Button -->
-
-                        <!-- Send Button -->
-                        <button type="button"
-                            class="inline-flex flex-shrink-0 justify-center items-center size-8 rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <svg class="flex-shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="16"
-                                height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path
-                                    d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
-                            </svg>
-                        </button>
-                        <!-- End Send Button -->
-                    </div>
-                    <!-- End Button Group -->
                 </div>
+                <!-- End Toolbar -->
             </div>
-            <!-- End Toolbar -->
-        </div>
+        </form>
         <!-- End Input -->
     </footer>
     <!-- End Search -->
