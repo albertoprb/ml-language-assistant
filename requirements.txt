@@ -1,0 +1,26 @@
+# pip install -r requirements.txt
+
+debugpy
+
+# Data Analysis & visualization
+pandas==2.2.1
+numpy==1.26.4
+
+# Data Ingestion
+beautifulsoup4==4.12.3
+
+
+# Machine learning
+# scikit-learn==1.4
+# tensorflow==2.16.1
+# keras==3.0.5
+# xgboost==2.0.3
+
+# NLP
+
+
+# Dashboard
+fastapi[all]==0.110.0
+uvicorn[standard]==0.28.0
+gunicorn==21.2.0
+Jinja2==3.1.3

@@ -1,0 +1,172 @@
+<h1 class="block text-2xl font-bold text-gray-800 sm:text-3xl dark:text-white">Overview</h1>
+
+<!-- Card Section -->
+<div class="max-w-[85rem] py-10 mx-auto">
+
+  <!-- Grid -->
+  <div class="grid sm:grid-cols-4 border-y border-gray-200 dark:border-gray-800">
+
+
+    <!-- Card -->
+    <div
+      class="p-4 md:p-5 relative before:absolute before:top-0 before:start-0 before:w-full before:h-px sm:before:w-px sm:before:h-full before:bg-gray-200 before:first:bg-transparent dark:before:bg-gray-700">
+      <div>
+        <svg class="flex-shrink-0 size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" class="lucide lucide-video">
+          <path d="m22 8-6 4 6 4V8Z" />
+          <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+        </svg>
+
+        <div class="mt-3">
+          <div class="flex items-center gap-x-2">
+            <p class="text-xs uppercase tracking-wide text-gray-500">
+              Total courses
+            </p>
+            <div class="hs-tooltip">
+              <div class="hs-tooltip-toggle">
+                <svg class="flex-shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24"
+                  height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <path d="M12 17h.01" />
+                </svg>
+                <span
+                  class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded shadow-sm dark:bg-slate-700"
+                  role="tooltip">
+                  Total numbers of courses available for the crawler at March 2024.
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-1 lg:flex lg:justify-between lg:items-center">
+            <h3 class="text-xl sm:text-2xl font-semibold text-blue-500 dark:text-gray-200">
+              {{summary_stats.num_courses}}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Card -->
+
+    <!-- Card -->
+    <div
+      class="p-4 md:p-5 relative before:absolute before:top-0 before:start-0 before:w-full before:h-px sm:before:w-px sm:before:h-full before:bg-gray-200 before:first:bg-transparent dark:before:bg-gray-700">
+      <div>
+
+        <svg class="flex-shrink-0 size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
+        <div class="mt-3">
+          <div class="flex items-center gap-x-2">
+            <p class="text-xs uppercase tracking-wide text-gray-500">
+              Instructors
+            </p>
+            <div class="hs-tooltip">
+              <div class="hs-tooltip-toggle">
+                <svg class="flex-shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24"
+                  height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <path d="M12 17h.01" />
+                </svg>
+                <span
+                  class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded shadow-sm dark:bg-slate-700"
+                  role="tooltip">
+                  Total numbers of courses available for the crawler at March 2024.
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-1 lg:flex lg:justify-between lg:items-center">
+            <h3 class="text-xl sm:text-2xl font-semibold text-blue-500 dark:text-gray-200">
+              {{summary_stats.instructors}}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Card -->
+
+    <!-- Card -->
+    <div
+      class="p-4 md:p-5 relative before:absolute before:top-0 before:start-0 before:w-full before:h-px sm:before:w-px sm:before:h-full before:bg-gray-200 before:first:bg-transparent dark:before:bg-gray-700">
+      <div>
+
+        <svg class="flex-shrink-0 size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-check"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="m16 19 2 2 4-4"/></svg>
+
+        <div class="mt-3">
+          <div class="flex items-center gap-x-2">
+            <p class="text-xs uppercase tracking-wide text-gray-500">
+              Subscribers
+            </p>
+            <div class="hs-tooltip">
+              <div class="hs-tooltip-toggle">
+                <svg class="flex-shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24"
+                  height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <path d="M12 17h.01" />
+                </svg>
+                <span
+                  class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded shadow-sm dark:bg-slate-700"
+                  role="tooltip">
+                  Total numbers of subscribers for this category.
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-1 lg:flex lg:justify-between lg:items-center">
+            <h3 class="text-xl sm:text-2xl font-semibold text-blue-500 dark:text-gray-200">
+              {{summary_stats.total_subscribers}}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Card -->
+
+    <!-- Card -->
+    <div
+      class="p-4 md:p-5 relative before:absolute before:top-0 before:start-0 before:w-full before:h-px sm:before:w-px sm:before:h-full before:bg-gray-200 before:first:bg-transparent dark:before:bg-gray-700">
+      <div>
+        <svg class="flex-shrink-0 size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+
+        <div class="mt-3">
+          <div class="flex items-center gap-x-2">
+            <p class="text-xs uppercase tracking-wide text-gray-500">
+              Average Rating
+            </p>
+            <div class="hs-tooltip">
+              <div class="hs-tooltip-toggle">
+                <svg class="flex-shrink-0 size-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" width="24"
+                  height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <path d="M12 17h.01" />
+                </svg>
+                <span
+                  class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded shadow-sm dark:bg-slate-700"
+                  role="tooltip">
+                  Average course rating in this category
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="mt-1 lg:flex lg:justify-between lg:items-center">
+            <h3 class="text-xl sm:text-2xl font-semibold text-blue-500 dark:text-gray-200">
+              {{summary_stats.avg_rate}}
+            </h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Card -->
+
+  </div>
+  <!-- End Grid -->
+</div>
+<!-- End Card Section -->

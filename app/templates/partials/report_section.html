@@ -1,0 +1,64 @@
+<h1 class="block text-2xl font-bold text-gray-800 sm:text-3xl dark:text-white">{{ section.title }}</h1>
+
+<p class="mt-2 text-lg text-gray-800 dark:text-gray-400">
+  {{ section.description }}
+</p>
+
+{% for table in section.tables %}
+  <div class="flex flex-col bg-white border border-gray-200 shadow-sm rounded-xl p-4 md:p-5 mt-4 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+    
+    <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+      {{table.title}}
+    </h3>
+    
+    <p class="mt-1 text-xs font-medium uppercase text-gray-500 dark:text-gray-500">
+      <!-- Few courses have more than 500k subscribers. -->
+    </p>
+
+    <div class="flex flex-col mt-4">
+      <div class="-m-1.5 overflow-x-auto">
+        <div class="p-1.5 min-w-full inline-block align-middle">
+          <div class="overflow-hidden">
+            <table class="min-w-full">
+              <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  {% for column in table.data.columns %}
+                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase">
+                      {{ column }}
+                    </th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for key, rows in table.data.iterrows() %}
+                  <tr>
+                    {% for row in rows %}
+                      <td class="px-6 py-1 whitespace-nowrap text-sm font-normal text-gray-800 dark:text-gray-200">
+                        {{row}}
+                      </td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+{% endfor %}
+
+
+
+{% for chart in section.charts %}
+<div class="flex flex-col bg-white border border-gray-200 shadow-sm rounded-xl p-4 md:p-5 mt-4 dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400">
+  <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+    {{ chart.title | safe }}
+  </h3>
+  <p class="mt-1 text-xs font-medium uppercase text-gray-500 dark:text-gray-500">
+    <!-- Few courses have more than 500k subscribers. -->
+  </p>
+  {{ chart.figure | safe }}
+</div>
+{% endfor %}

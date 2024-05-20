@@ -1,0 +1,16 @@
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Subscriptions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for key,course in courses.iterrows() %}
+      <tr scope="row">
+        <td>{{ course['title'] }}</td>
+        <td>{{ course['num_subscribers'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>

@@ -1,0 +1,9 @@
+<section class="pt-10 sm:pt-6 md:pt-8 lg:pt-12">
+    {% include 'partials/report_stats_summary.html' %}
+  </section>
+
+{% for section in sections %}
+    <section class="pt-10 space-y-12 sm:pt-6 md:pt-8 lg:pt-12">
+        {% include 'partials/report_section.html' %}
+    </section>
+{% endfor %}
