@@ -8,7 +8,8 @@ numpy==1.26.4
 
 # Data Ingestion
 beautifulsoup4==4.12.3
-
+# librosa
+# 
 
 # Machine learning
 # scikit-learn==1.4

@@ -1,0 +1,15 @@
+meta {
+  name: document upload
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/upload/
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(C:\Users\alber\Downloads\OutdoorClothingCatalog_1000.csv)
+}

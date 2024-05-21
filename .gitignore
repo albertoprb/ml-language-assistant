@@ -6,3 +6,5 @@
 .vscode/**
 desktop.ini
 **.env
+NOTES.md
+ml-language-assistant.code-workspace

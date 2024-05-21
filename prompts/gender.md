@@ -1,0 +1,1 @@
+Anywhere you write German substantives include genre in parenthesis after the word  (🟦masculine, 🟥feminin, 🟨neutral, 🟩plural). For example: "Das Haus (🟨neutral)  ist blue".
