@@ -7,8 +7,18 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.memory import ChatMessageHistory
 
-from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import (
+    WebBaseLoader,
+    AsyncChromiumLoader
+)
 import bs4
+
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_chroma import Chroma
+
+from faster_whisper import WhisperModel
+
+import logging
 
 
 class Message(BaseModel):
@@ -72,26 +82,42 @@ class Chat(BaseModel):
 
 class AudioProcessor:
 
-    def __init__(self):
-        pass
+    def __init__(self, file):
+        model = WhisperModel("tiny", cpu_threads=7, num_workers=4)
+        segments, info = model.transcribe(file)
+        for segment in segments:
+            print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
 
 
 class NewsProcessor:
 
-    def __init__(self):
+    def __init__(self, url, vector_store, embedding_function):
+        
+        logging.info("Loading news article from %s", url)
         loader = WebBaseLoader(
-            web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+            web_paths=[url],
             bs_kwargs=dict(
-                parse_only=bs4.SoupStrainer(
-                    class_=("post-content", "post-title", "post-header")
-                )
+                parse_only=bs4.SoupStrainer('article')
             ),
         )
-
         docs = loader.load()
-        for i, doc in enumerate(docs):
-            print(doc.metadata)
-            print(doc.page_content)
+
+        logging.info("Splitting news article into chunks of 1000 characters")
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+        splits = text_splitter.split_documents(docs)
+
+        logging.info("Indexing news article chunks with VectorStore")
+        chroma = Chroma.from_documents(
+            client=vector_store,
+            documents=splits,
+            embedding=embedding_function
+        )
+        
+        query = "Was Plant Google?"
+        results = chroma.similarity_search(query)
+
+        # print results
+        print(results)
 
 
 class TextProcessor:

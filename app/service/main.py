@@ -3,33 +3,35 @@ from fastapi import FastAPI, Request, Header, HTTPException, File, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates  # For HTML templates
 from fastapi.staticfiles import StaticFiles  # for mounting static files
+import logging
 import debugpy  # For debugging
 from app.service.assistant import (
     Chat,
     Message,
-    NewsProcessor
+    NewsProcessor,
+    AudioProcessor
 )
 import os
-import chromadb
-from langchain_community.embeddings.sentence_transformer import (
-    SentenceTransformerEmbeddings
-)
+# import chromadb
+# from langchain_community.embeddings.sentence_transformer import (
+#     SentenceTransformerEmbeddings
+# )
 
 from dotenv import load_dotenv
 load_dotenv()
-
+logging.basicConfig(level=logging.INFO)
 
 """
 Starting vector store
 """
 
-vector_store_directory = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "../../data/")
-)
-embedding_function = SentenceTransformerEmbeddings(
-    model_name="all-MiniLM-L6-v2"
-)
-vector_store = chromadb.PersistentClient(path=vector_store_directory)
+# vector_store_directory = os.path.normpath(
+#     os.path.join(os.path.dirname(__file__), "../../data/")
+# )
+# embedding_function = SentenceTransformerEmbeddings(
+#     model_name="all-MiniLM-L6-v2"
+# )
+# vector_store = chromadb.PersistentClient(path=vector_store_directory)
 
 
 """
@@ -112,13 +114,21 @@ files_directory = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "../../data/")
 )
 
+from faster_whisper import WhisperModel
+
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
+
+    # news_processor = NewsProcessor(
+    #     url="https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html",
+    #     vector_store=vector_store, 
+    #     embedding_function=embedding_function
+    # )
+
     # contents = await file.read()
-    # # Save the file or process it as needed
-    # with open(f"{files_directory}/{file.filename}", "wb") as f:
-    #     f.write(contents)
-        
-    news_processor = NewsProcessor()
-        
+    model = WhisperModel("tiny", cpu_threads=7, num_workers=4)
+    segments, info = model.transcribe(audio=file.file)
+    for segment in segments:
+        print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
+
     return JSONResponse(content={"filename": file.filename})
