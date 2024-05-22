@@ -1,0 +1,17 @@
+meta {
+  name: news
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/content/news/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "url": "https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html"
+  }
+}

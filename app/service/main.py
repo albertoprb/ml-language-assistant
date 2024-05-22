@@ -12,10 +12,14 @@ from app.service.assistant import (
     AudioProcessor
 )
 import os
-# import chromadb
-# from langchain_community.embeddings.sentence_transformer import (
-#     SentenceTransformerEmbeddings
-# )
+import shutil
+import chromadb
+from langchain_community.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddings
+)
+
+import whisperx
+# from faster_whisper import WhisperModel
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -25,13 +29,13 @@ logging.basicConfig(level=logging.INFO)
 Starting vector store
 """
 
-# vector_store_directory = os.path.normpath(
-#     os.path.join(os.path.dirname(__file__), "../../data/")
-# )
-# embedding_function = SentenceTransformerEmbeddings(
-#     model_name="all-MiniLM-L6-v2"
-# )
-# vector_store = chromadb.PersistentClient(path=vector_store_directory)
+vector_store_directory = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "../../data/")
+)
+embedding_function = SentenceTransformerEmbeddings(
+    model_name="all-MiniLM-L6-v2"
+)
+vector_store = chromadb.PersistentClient(path=vector_store_directory)
 
 
 """
@@ -110,25 +114,47 @@ async def send_message(
     return templates.TemplateResponse("partials/message.html", context)
 
 
-files_directory = os.path.normpath(
-    os.path.join(os.path.dirname(__file__), "../../data/")
-)
+@app.post("/content/audio/")
+async def audio(file: UploadFile = File(...)):
+    if not file:
+        return JSONResponse(content={"error": "No file sent"}, status_code=400)
+    else:
+        
+        file_path = os.path.normpath(
+            os.path.join(
+                os.path.dirname(__file__), "../../data/" + 
+                file.filename
+            )
+        )
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        processed_audio = AudioProcessor(file=file_path)
+        processed_audio.save(
+            vector_store=vector_store,
+            embedding_function=embedding_function
+        )
+        return JSONResponse(
+            content={"filename": file.filename}, status_code=200
+        )
 
-from faster_whisper import WhisperModel
+@app.post("/content/news/")
+async def news(request: Request):
 
-@app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
+    data = await request.json()
+    url = data.get("url")
 
-    # news_processor = NewsProcessor(
-    #     url="https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html",
-    #     vector_store=vector_store, 
-    #     embedding_function=embedding_function
-    # )
+    if not url:
+        return JSONResponse(content={"error": "No url sent"}, status_code=400)
+    else:
+        news_processor = NewsProcessor(url=url)
+        news_processor.save(
+            vector_store=vector_store,
+            embedding_function=embedding_function
+        )
+        return JSONResponse(content={"url": url}, status_code=200)
 
-    # contents = await file.read()
-    model = WhisperModel("tiny", cpu_threads=7, num_workers=4)
-    segments, info = model.transcribe(audio=file.file)
-    for segment in segments:
-        print("[%.2fs -> %.2fs] %s" % (segment.start, segment.end, segment.text))
-
-    return JSONResponse(content={"filename": file.filename})
+@app.get("/query/")
+async def find(query: str):
+    #print(vector_store.similarity_search(query))
+    return JSONResponse(content={"query": query})

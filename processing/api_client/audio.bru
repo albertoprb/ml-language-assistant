@@ -1,0 +1,15 @@
+meta {
+  name: audio
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/content/audio/
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(C:\Users\alber\projects\ml-learning\deep learning\my_projects\whisper\podcast_sample.mp3)
+}
