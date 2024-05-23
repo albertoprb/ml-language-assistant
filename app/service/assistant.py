@@ -168,7 +168,7 @@ class Quiz:
 
     def __init__(self):
         pass
-    
+
     def _prompt_from(self, format_instructions):
         prompt = PromptTemplate(
             template=self.prompt_template,
@@ -274,7 +274,7 @@ class AudioProcessor:
                 }
             ))
 
-        self.generate_questions()
+        # self.generate_questions()
 
         logging.info("Indexing audio splits with VectorStore")
         db.from_documents(
@@ -313,6 +313,12 @@ class NewsProcessor:
             documents=self.splits,
             embedding=db.embeddings
         )
+
+        context = self._format_docs(self.splits)
+        quiz = Quiz()
+        questions = quiz.questions_from(context)
+        print(questions['quiz'])
+
         return self._format_docs(self.splits)
 
 
