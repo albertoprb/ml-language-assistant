@@ -20,6 +20,9 @@ from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings
 )
 
+import sqlite3
+import random
+
 import whisperx
 # from faster_whisper import WhisperModel
 
@@ -28,20 +31,41 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 """
-Starting vector store
+Starting storage
 """
 
-vector_store_directory = os.path.normpath(
+storage_dir = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "../../data/")
 )
 embedding_function = SentenceTransformerEmbeddings(
     model_name="all-MiniLM-L6-v2"
 )
-vector_store = chromadb.PersistentClient(path=vector_store_directory)
+vector_store = chromadb.PersistentClient(path=storage_dir)
 langchain_chroma = Chroma(
     client=vector_store,
     embedding_function=embedding_function,
 )
+
+sql_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../data/quiz.db"))
+sql_conn = sqlite3.connect(sql_dir)
+
+def init_db():
+    cursor = sql_conn.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS quiz (
+            id INTEGER PRIMARY KEY,
+            question TEXT,
+            answer TEXT,
+            source TEXT
+        )
+    ''')
+
+    sql_conn.commit()
+    sql_conn.close()
+
+
+init_db()
 
 """
 Starting app
@@ -131,7 +155,7 @@ async def audio(file: UploadFile = File(...)):
     else:
         file_path = os.path.normpath(
             os.path.join(
-                os.path.dirname(__file__), "../../data/" + 
+                os.path.dirname(__file__), "../../data/" +
                 file.filename
             )
         )
@@ -140,11 +164,14 @@ async def audio(file: UploadFile = File(...)):
 
         processed_audio = AudioProcessor(file=file_path)
         segments = processed_audio.save(db=langchain_chroma)
+        qa = processed_audio.generate_questions()
+
         return JSONResponse(
             content={
                 "filename": file.filename,
-                "segments": segments
-            }, 
+                "segments": segments,
+                "quiz": qa
+            },
             status_code=200
         )
 
@@ -157,12 +184,15 @@ async def news(request: Request):
     if not url:
         return JSONResponse(content={"error": "No url sent"}, status_code=400)
     else:
-        news_processor = NewsProcessor(url=url)
+        processed_news = NewsProcessor(url=url)
+        text = processed_news.save(db=langchain_chroma)
+        qa = processed_news.generate_questions()
         return JSONResponse(
             content={
                 "url": url,
-                "text": news_processor.save(db=langchain_chroma)
-            }, 
+                "text": text,
+                "quiz": qa
+            },
             status_code=200
         )
 

@@ -29,6 +29,8 @@ from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnablePassthrough
 
+import sqlite3
+
 import whisperx
 
 import logging
@@ -167,7 +169,7 @@ class Quiz:
     """
 
     def __init__(self):
-        pass
+        self.qa = []
 
     def _prompt_from(self, format_instructions):
         prompt = PromptTemplate(
@@ -201,8 +203,11 @@ class Quiz:
 
         chain = prompt | model | parser
         output = chain.invoke({"context": context})
-        return output
-
+        self.qa = output['quiz']
+        return self
+    
+    def save(self, db: sqlite3.dbapi2.Connection):
+        pass
 
 class AudioProcessor:
 
@@ -212,6 +217,7 @@ class AudioProcessor:
     model = "tiny"
     language = "de"
     segments: List = []
+    quiz:Quiz = None
 
     def __init__(self, file, align=False):
         logging.info("Transcribing audio file %s", file)
@@ -259,9 +265,8 @@ class AudioProcessor:
 
     def generate_questions(self):
         transcription = self._format_segments()
-        quiz = Quiz()
-        questions = quiz.questions_from(transcription)
-        print(questions['quiz'])
+        self.quiz = Quiz().questions_from(transcription)
+        return self.quiz.qa
 
     def save(self, db: Chroma):
         splits = []
@@ -274,18 +279,19 @@ class AudioProcessor:
                 }
             ))
 
-        # self.generate_questions()
-
         logging.info("Indexing audio splits with VectorStore")
         db.from_documents(
             documents=splits,
             embedding=db.embeddings
         )
+        # self.quiz.save(db)
         return self._format_segments()
 
 
 
 class NewsProcessor:
+    
+    quiz:Quiz = None
 
     def __init__(self, url):
 
@@ -306,6 +312,11 @@ class NewsProcessor:
 
     def _format_docs(self, docs):
         return "\n\n".join(doc.page_content for doc in docs)
+    
+    def generate_questions(self):
+        context = self._format_docs(self.splits)
+        self.quiz = Quiz().questions_from(context)
+        return self.quiz.qa 
 
     def save(self, db: Chroma):
         logging.info("Indexing news article chunks with VectorStore")
@@ -313,12 +324,6 @@ class NewsProcessor:
             documents=self.splits,
             embedding=db.embeddings
         )
-
-        context = self._format_docs(self.splits)
-        quiz = Quiz()
-        questions = quiz.questions_from(context)
-        print(questions['quiz'])
-
         return self._format_docs(self.splits)
 
 
