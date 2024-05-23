@@ -149,11 +149,61 @@ class Query:
         return results
 
 
-class Ask:
+class Quiz:
+    prompt_template = """
+        The CONTENT below was uploaded by a user.
+        Generate questions about the main points of the CONTENT.
+        Answer these questions using the CONTENT.
+        The answers should be comprehensive and include CONTENT passages.
+        Your questions and answers should be strictly in German.
+        \n
+        CONTENT START
+        \n
+        {context}
+        \n
+        CONTENT END
+        \n      
+        {format_instructions}
+    """
 
-    def __init__(self, docs, db):
+    def __init__(self):
         pass
     
+    def _prompt_from(self, format_instructions):
+        prompt = PromptTemplate(
+            template=self.prompt_template,
+            input_variables=["context"],
+            partial_variables={
+                "format_instructions": format_instructions
+            },
+        )
+        return prompt
+        
+    def questions_from(self, context):
+        model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.8)
+
+        response_schemas = [
+            ResponseSchema(
+                name="quiz",
+                description="""
+                    description to model with the example:
+                    [{
+                        "question": "Question from content", 
+                        "answer": "Answer using content and passages"
+                    }]
+                """,
+                type="array(objects)"
+            )
+        ]
+
+        parser = StructuredOutputParser.from_response_schemas(response_schemas)
+        prompt = self._prompt_from(parser.get_format_instructions())
+
+        chain = prompt | model | parser
+        output = chain.invoke({"context": context})
+        return output
+
+
 class AudioProcessor:
 
     device = "cpu"
@@ -207,56 +257,11 @@ class AudioProcessor:
 
         return "\n".join(to_text(seg) for seg in self.segments)
 
-    def _generate_questions(self):
-
-        logging.info("Formatting transcription")
+    def generate_questions(self):
         transcription = self._format_segments()
-
-        model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.8)
-        
-        prompt_template = """
-            The podcast transcription below was uploaded by a user.
-            Generate questions about the main points of the podcast.
-            Anwers these questions using only the transcription content.
-            Make the answers long and include citations.
-            Your questions and answers should be strictly in German.
-            \n
-            TRANSCRIPTION START
-            \n
-            {transcription}
-            \n
-            TRANSCRIPTION END
-            \n      
-            {format_instructions}
-        """
-
-        def prompt_from(format_instructions):
-            prompt = PromptTemplate(
-                template=prompt_template,
-                input_variables=["transcription"],
-                partial_variables={
-                    "format_instructions": format_instructions
-                },
-            )
-            return prompt
-
-        response_schemas=[
-            ResponseSchema(
-                name="quiz",
-                description="""
-                    description to model with the example: 
-                    [{"question": "Question from content", "answer": "Answer using content"}]
-                """,
-                type="array(objects)"
-            )
-        ]
-
-        parser = StructuredOutputParser.from_response_schemas(response_schemas)
-        prompt = prompt_from(parser.get_format_instructions())
-
-        chain = prompt | model | parser
-        output = chain.invoke({"transcription": transcription})
-        print(output)
+        quiz = Quiz()
+        questions = quiz.questions_from(transcription)
+        print(questions['quiz'])
 
     def save(self, db: Chroma):
         splits = []
@@ -269,8 +274,7 @@ class AudioProcessor:
                 }
             ))
 
-        # Generate questions from transcription with LLM and add to a Question collection
-        self._generate_questions()
+        self.generate_questions()
 
         logging.info("Indexing audio splits with VectorStore")
         db.from_documents(
