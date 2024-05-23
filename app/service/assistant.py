@@ -4,7 +4,11 @@ from typing import List
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
 
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    MessagesPlaceholder,
+    PromptTemplate
+)
 from langchain_core.documents import Document
 from langchain.memory import ChatMessageHistory
 
@@ -19,6 +23,9 @@ from langchain_chroma import Chroma
 
 from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
+from langchain.output_parsers import StructuredOutputParser, ResponseSchema
+
+
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnablePassthrough
 
@@ -200,6 +207,56 @@ class AudioProcessor:
 
         return "\n".join(to_text(seg) for seg in self.segments)
 
+    def _generate_questions(self):
+
+        logging.info("Formatting transcription")
+        transcription = self._format_segments()
+
+        model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.8)
+        
+        prompt_template = """
+            The podcast transcription below was uploaded by a user.
+            Generate questions about the main points of the podcast.
+            Anwers these questions using only the transcription content.
+            Make the answers long and include citations.
+            Your questions and answers should be strictly in German.
+            \n
+            TRANSCRIPTION START
+            \n
+            {transcription}
+            \n
+            TRANSCRIPTION END
+            \n      
+            {format_instructions}
+        """
+
+        def prompt_from(format_instructions):
+            prompt = PromptTemplate(
+                template=prompt_template,
+                input_variables=["transcription"],
+                partial_variables={
+                    "format_instructions": format_instructions
+                },
+            )
+            return prompt
+
+        response_schemas=[
+            ResponseSchema(
+                name="quiz",
+                description="""
+                    description to model with the example: 
+                    [{"question": "Question from content", "answer": "Answer using content"}]
+                """,
+                type="array(objects)"
+            )
+        ]
+
+        parser = StructuredOutputParser.from_response_schemas(response_schemas)
+        prompt = prompt_from(parser.get_format_instructions())
+
+        chain = prompt | model | parser
+        output = chain.invoke({"transcription": transcription})
+        print(output)
 
     def save(self, db: Chroma):
         splits = []
@@ -212,12 +269,16 @@ class AudioProcessor:
                 }
             ))
 
+        # Generate questions from transcription with LLM and add to a Question collection
+        self._generate_questions()
+
         logging.info("Indexing audio splits with VectorStore")
         db.from_documents(
             documents=splits,
             embedding=db.embeddings
         )
         return self._format_segments()
+
 
 
 class NewsProcessor:
