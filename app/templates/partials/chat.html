@@ -67,8 +67,120 @@
                 <!-- End Card -->
             </li>
             <!-- End -->
+
+            {% for message in chat.history.messages %}
+            {% if message.type == 'ai' %}
+            <!-- AI reply -->
+            <li class="flex gap-x-2 sm:gap-x-4">
+                <span
+                    class="flex-shrink-0 inline-flex items-center justify-center size-[38px] rounded-full bg-blue-600">
+                    <span class="text-sm font-medium text-white leading-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-bot-message-square">
+                            <path d="M12 6V2H8" />
+                            <path d="m8 18-4 4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
+                            <path d="M2 12h2" />
+                            <path d="M9 11v2" />
+                            <path d="M15 11v2" />
+                            <path d="M20 12h2" />
+                        </svg>
+                    </span>
+                </span>
+
+                <!-- Card -->
+                <div
+                    class="bg-white border border-gray-200 rounded-lg p-4 space-y-3 dark:bg-neutral-900 dark:border-neutral-700">
+                    <div class="space-y-1.5">
+                        <p class="mb-3 text-sm text-gray-800 dark:text-white">
+                            {{message.content}}
+                        </p>
+                        {% if message.response_metadata.sources|length > 0 %}
+                        <h2 class="font-medium text-gray-800 dark:text-white">
+                            Sources
+                        </h2>
+                        {% endif %}
+                        <ul class="marker:text-blue-600 list-disc ps-5 space-y-2 text-sm text-gray-600
+                                        dark:text-neutral-400">
+                            {% for source in message.response_metadata.sources %}
+                            <li class="text-sm text-gray-800 dark:text-white">
+                                <p><a class="text-blue-600 hover:text-blue-500 opacity-90" href="{{source}}"
+                                        target="_blank">{{source}}</a></p>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <!-- Add sources -->
+                </div>
+                <!-- End Card -->
+            </li>
+            <!-- End AI reply -->
+            {% endif %}
+            {% if message.type == 'human' %}
+            <!-- Start User reply -->
+            <li class="max-w-2xl ms-auto flex justify-end gap-x-2 sm:gap-x-4">
+                <div class="grow text-end space-y-3">
+                    <!-- Card -->
+                    <div class="inline-block bg-blue-600 rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-white">
+                            {{message.content}}
+                        </p>
+                    </div>
+                    <!-- End Card -->
+                </div>
+
+                <span
+                    class="flex-shrink-0 inline-flex items-center justify-center size-[38px] rounded-full bg-gray-600">
+                    <span class="text-sm font-medium text-white leading-none">ME</span>
+                </span>
+            </li>
+            <!-- End User reply -->
+            {% endif %}
+            {% endfor %}
+
+            <!-- AI reply -->
+            <li class="flex gap-x-2 sm:gap-x-4 htmx-indicator" id="spinner">
+                <span
+                    class="flex-shrink-0 inline-flex items-center justify-center size-[38px] rounded-full bg-blue-600">
+                    <span class="text-sm font-medium text-white leading-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-bot-message-square">
+                            <path d="M12 6V2H8" />
+                            <path d="m8 18-4 4V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
+                            <path d="M2 12h2" />
+                            <path d="M9 11v2" />
+                            <path d="M15 11v2" />
+                            <path d="M20 12h2" />
+                        </svg>
+                    </span>
+                </span>
+
+                <!-- Card -->
+                <div
+                    class="bg-white border border-gray-200 rounded-lg p-4 space-y-3 dark:bg-neutral-900 dark:border-neutral-700">
+                    <div class="space-y-1.5">
+                        <p class="mb-3 text-sm text-gray-800 dark:text-white">
+                            Thinking...
+                        </p>
+                        <!-- End Send Button -->
+                        <div class="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500"
+                            role="status" aria-label="loading">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Card -->
+            </li>
+            <!-- End AI reply -->
+
+
         </ul>
     </div>
+
+
+
+
 
     <!-- Search -->
     <footer
@@ -78,11 +190,11 @@
                 <div class="text-end">
                     <button type="button"
                         class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
-                        Ask me a question about {{theme}}
+                        Ask me {{theme}}
                     </button>
-                    <button type="button"
+                    <button type="button" onclick="makeQuery()"
                         class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
-                        Summmarize {{theme}}
+                        Query {{theme}}
                     </button>
                 </div>
             </div>
@@ -90,19 +202,23 @@
         </div>
 
         <!-- Input -->
-        <form hx-post="/chats/{{chat.id}}/messages/" hx-swap="beforeend" hx-target="#chat-messages" hx-ext='json-enc'>
+        <form hx-post="/chats/{{chat.id}}/messages/" hx-swap="beforebegin" hx-target="#spinner" hx-indicator="#spinner"
+            hx-ext='json-enc' hx-on::after-request="userInputReset()">
 
             <div class="relative">
                 <textarea
                     class="p-4 pb-12 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                    placeholder="Ask me anything..." name="content"></textarea>
+                    placeholder="Ask me anything..." id="user_input" name="content" onkeyup="queryToLabel()"></textarea>
 
                 <!-- Toolbar -->
                 <div class="absolute bottom-px inset-x-px p-2 rounded-b-md bg-white dark:bg-neutral-900">
                     <div class="flex justify-between items-center">
                         <!-- Button Group -->
                         <div class="flex items-center">
-
+                            <span id="query_label"
+                                class="hidden inline-flex items-center gap-x-1.5 py-1.5 ps-3 pe-2 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-500">
+                                Query
+                            </span>
                         </div>
                         <!-- End Button Group -->
 
@@ -130,7 +246,6 @@
                                         d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
                                 </svg>
                             </button>
-                            <!-- End Send Button -->
                         </div>
                         <!-- End Button Group -->
                     </div>

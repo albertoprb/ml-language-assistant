@@ -9,11 +9,13 @@ from app.service.assistant import (
     Chat,
     Message,
     NewsProcessor,
-    AudioProcessor
+    AudioProcessor,
+    Query
 )
 import os
 import shutil
 import chromadb
+from langchain_chroma import Chroma
 from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings
 )
@@ -36,7 +38,10 @@ embedding_function = SentenceTransformerEmbeddings(
     model_name="all-MiniLM-L6-v2"
 )
 vector_store = chromadb.PersistentClient(path=vector_store_directory)
-
+langchain_chroma = Chroma(
+    client=vector_store,
+    embedding_function=embedding_function,
+)
 
 """
 Starting app
@@ -103,12 +108,16 @@ async def send_message(
     if chat_id not in chats:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    print(request)
-
+    reply = chats[chat_id].send(
+        message=message,
+        db=langchain_chroma
+    )
+    logging.info("Reply: %s", reply)
     context = {
         "request": request,
-        "user_message": message.content,
-        "ai_message": chats[chat_id].send(message)
+        "user_message": reply["question"],
+        "ai_message": reply["answer"],
+        "sources": reply["sources"],
     }
 
     return templates.TemplateResponse("partials/message.html", context)
@@ -116,10 +125,10 @@ async def send_message(
 
 @app.post("/content/audio/")
 async def audio(file: UploadFile = File(...)):
+
     if not file:
         return JSONResponse(content={"error": "No file sent"}, status_code=400)
     else:
-        
         file_path = os.path.normpath(
             os.path.join(
                 os.path.dirname(__file__), "../../data/" + 
@@ -128,14 +137,15 @@ async def audio(file: UploadFile = File(...)):
         )
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        
+
         processed_audio = AudioProcessor(file=file_path)
-        processed_audio.save(
-            vector_store=vector_store,
-            embedding_function=embedding_function
-        )
+        segments = processed_audio.save(db=langchain_chroma)
         return JSONResponse(
-            content={"filename": file.filename}, status_code=200
+            content={
+                "filename": file.filename,
+                "segments": segments
+            }, 
+            status_code=200
         )
 
 @app.post("/content/news/")
@@ -148,13 +158,19 @@ async def news(request: Request):
         return JSONResponse(content={"error": "No url sent"}, status_code=400)
     else:
         news_processor = NewsProcessor(url=url)
-        news_processor.save(
-            vector_store=vector_store,
-            embedding_function=embedding_function
+        return JSONResponse(
+            content={
+                "url": url,
+                "text": news_processor.save(db=langchain_chroma)
+            }, 
+            status_code=200
         )
-        return JSONResponse(content={"url": url}, status_code=200)
 
 @app.get("/query/")
 async def find(query: str):
-    #print(vector_store.similarity_search(query))
-    return JSONResponse(content={"query": query})
+
+    if query == "":
+        return JSONResponse(content={"error": "Empty query"}, status_code=400)
+    else:
+        query = Query(query=query, db=langchain_chroma)
+        return JSONResponse(content={"answer": query.answer()}, status_code=200)

@@ -28,6 +28,34 @@
 
 
   <script src="./preline/dist/preline.js"></script>
+  <script>
+    function queryToLabel() {
+      userInput = document.getElementById('user_input');
+      if (userInput.value.includes('@query')) {
+        document.getElementById('query_label').classList.remove('hidden');
+      }
+      else
+        document.getElementById('query_label').classList.add('hidden');
+    }
+
+    function makeQuery() {
+      userInput = document.getElementById('user_input');
+      userInput.value = '@query ' + userInput.value;
+      document.getElementById('query_label').classList.remove('hidden');
+      document.getElementById('user_input').focus();
+    }
+
+    function userInputReset() {
+      userInput = document.getElementById('user_input');
+      userInput.value = '';
+      userInput.focus();
+    }
+
+    document.body.addEventListener('htmx:beforeSwap', function (evt) {
+      userInputReset();
+      document.getElementById('query_label').classList.add('hidden');
+    });
+  </script>
 </body>
 
 </html>
