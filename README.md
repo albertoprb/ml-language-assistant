@@ -81,32 +81,6 @@ Currently the app has:
 
 The app has been deployed to fly.io using Docker for demonstration.
 
-## Future experiences
+## :dependabot: Architecture
 
-##### Vocabulary management
-
-- Content simplification. Process the content to a more acessible form for new users.
-
-##### Vocabulary management
-
-- Use words X, Y, Z in your answer
-- Add any word for vocabulary practice with the copilot
-- Get suggestions from copilot of which words to add to the vocabulary
-
-##### Self-contained desktop app
-
-{'context':
-[
-Document(
-page_content='Reaktion auf ChatGPT\nGoogle-Suche bald mit Künstlicher Intelligenz\n\nStand: 15.05.2024 10:49 Uhr\n\n\n\n\nBei der Websuche hat Google Nachholbedarf: Während ChatGPT schon präzise Antworten auf Fragen gibt, spuckt Google vor allem Links aus. Doch jetzt plant der Tech-Riese eine neue KI-Websuche.',
-metadata={'source': 'https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html', 'title': 'Facebook'}
-),
-Document(page_content='Der Textroboter ChatGPT von Microsoft und OpenAI machte den Anfang.\n mehr\n\n\n\n\n\n\n\n\n\n\nKonkurrenz ist Gefahr für Googles Geschäftsmodell',
-metadata={'source': 'https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html', 'title': 'Facebook'}),
-Document(page_content='Der Erfolgs- und Konkurrenzdruck für Alphabet ist derzeit groß. Analyst Jacob Bourne von eMarketer sagte, dass der Start von AI Overviews in dieser Woche ein Indikator dafür sein werde, wie gut Google sein Suchprodukt an die Anforderungen der generativen KI-Ära anpassen kann. Am Vortag hatte der ChatGPT-Entwickler OpenAI die Latte für die Google-Ankündigungen hochgelegt. OpenAI präsentierte eine ChatGPT-Version, die sich fließend mit Menschen unterhalten und auch deren Gemütszustand erkennen',
-metadata={'source': 'https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html', 'title': 'Facebook'}),
-Document(page_content='Weltweit ringen Techkonzerne um die führende Position im Bereich der Künstlichen Intelligenz. Gerade bei der Websuche lockt ein Milliardenmarkt, der derzeit von Google dominiert wird. Diese Position will der Konzern halten und hat gestern auf der Entwicklerkonferenz Google I/O in den USA viele Neuerungen rund um seine Suchmaschine bekanntgegeben.',
-metadata={'source': 'https://www.tagesschau.de/wirtschaft/google-suchmaschine-ki-chatgpt-100.html', 'title': 'Facebook'})],
-'question': '@query Was plant Google?',
-'answer': 'Nein, Google war nicht der Entwickler des Textroboters ChatGPT, sondern Microsoft und OpenAI. Google plant jedoch eine neue KI-Websuche, um mit der Konkurrenz im Bereich der Künstlichen Intelligenz mitzuhalten. Die Konkurrenz im Bereich der KI stellt eine Gefahr für Googles Geschäftsmodell dar, weshalb der Tech-Riese seine Suchprodukte anpassen muss.'
-}
+![Architecture](architecture.png)
