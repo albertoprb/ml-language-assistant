@@ -185,21 +185,24 @@
     <!-- Search -->
     <footer
         class="max-w-4xl mx-auto sticky bottom-0 z-10 bg-white border-t border-gray-200 pt-2 pb-4 sm:pt-4 sm:pb-6 px-4 sm:px-6 lg:px-0 dark:bg-neutral-900 dark:border-neutral-700">
-        <div class="flex justify-between items-center mb-3">
-            <div>
-                <div class="text-end">
-                    <button type="button"
-                        class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
-                        Ask me {{theme}}
-                    </button>
-                    <button type="button" onclick="makeQuery()"
-                        class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
-                        Query {{theme}}
-                    </button>
+        <form hx-post="/chats/{{chat.id}}/quiz/" hx-swap="beforebegin" hx-target="#spinner" hx-indicator="#spinner"
+            hx-ext='json-enc' hx-on::after-request="userInputReset()">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <div class="text-end">
+                        <button type="submit"
+                            class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
+                            Quiz me! {{theme}}
+                        </button>
+                        <button type="button" onclick="makeQuery()"
+                            class="mb-2.5 ms-1.5 py-2 px-3 inline-flex justify-center items-center gap-x-2 rounded-lg border border-blue-600 bg-white text-blue-600 align-middle hover:bg-blue-50 text-sm dark:bg-neutral-900 dark:text-blue-500 dark:border-blue-500 dark:hover:text-blue-400 dark:hover:border-blue-400">
+                            Query documents {{theme}}
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-        </div>
+            </div>
+        </form>
 
         <!-- Input -->
         <form hx-post="/chats/{{chat.id}}/messages/" hx-swap="beforebegin" hx-target="#spinner" hx-indicator="#spinner"

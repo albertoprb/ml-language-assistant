@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 from langchain_openai import ChatOpenAI
 from langchain_groq import ChatGroq
@@ -34,21 +34,20 @@ import sqlite3
 import whisperx
 
 import logging
+import json
+from langchain_core.runnables import RunnableParallel
 
 
 class Message(BaseModel):
     content: str
+    metadata: Optional[dict] = {}
 
     def prompt(self):
         sytem_message = """
-        You are a helpful assistant named Sofia.
-        You are a language teacher. This is a teaching session.
-        You are only going to speak German.
-        Before you reply to the user, correct the user message \
-        if they make a grammatical mistake. 
-        If the user asks how you can help. Tell them, they can upload
-        a website or podcast, and practice with its contents.
-        They can for example get a random question asked to them using the button below.
+        You are a helpful assistant. Your name is Sofia.
+        You are a language teacher and this is a teaching session.
+        You are only going to speak German. Never speak other language.
+        Before you reply to the user, correct the user message if they made a grammatical mistake. Then continue with your reply.
         If they speak in english you can translate it for them and gently say, that's how you say it in German.
         Then proceed with your answer.
         """
@@ -65,6 +64,12 @@ class Message(BaseModel):
 
         return prompt
     
+    def add_source(self, source):
+        self.metadata['source'] = source
+
+    def is_quiz(self):
+        return "@quiz" in self.content
+
     def is_query(self):
         return "@query" in self.content
 
@@ -79,22 +84,27 @@ class Chat(BaseModel):
             temperature=0.2
         )
     )
-    # llm: ChatOpenAI = Field(
-    #     default_factory=lambda: ChatGroq(temperature=0.2, model="llama3-8b-8192")
-    # )
 
     history: ChatMessageHistory = Field(
         default_factory=ChatMessageHistory
     )
 
-    def send(self, message: Message, db: Chroma):
-        
+    def send(
+        self,
+        message: Message,
+        vector_db_path,
+        embedding_function
+    ):
+
         if message.is_query():
-            answer = Query(query=message.content, db=db).answer()
-            
+            answer = Query(
+                query=message.content,
+                vector_db_path=vector_db_path,
+                embedding_function=embedding_function).answer()
+
             self.history.add_user_message(message.content)
             self.history.add_ai_message(AIMessage(
-                content = answer['answer'],
+                content=answer['answer'],
                 response_metadata={
                     "sources": list(answer['sources'])
                 }
@@ -104,12 +114,26 @@ class Chat(BaseModel):
                 'answer': answer['answer'],
                 'sources': answer['sources']
             }
+        elif message.is_quiz():
+            funny_quiz = "Guten Tag, Quizmaster! Los geht's!"
+            self.history.add_user_message(funny_quiz)
+            self.history.add_ai_message(AIMessage(
+                content=message.content,
+                response_metadata={
+                    "sources": [message.metadata['source']]
+                }
+            ))
+            return {
+                'question': funny_quiz,
+                'answer': message.content,
+                'sources': [message.metadata['source']]
+            }
         else:
             chain = message.prompt() | self.llm
             ai_message = chain.invoke(
                 {"messages": self.history.messages}
             )
-            
+
             self.history.add_user_message(message.content)
             self.history.add_ai_message(ai_message.content)
             return {
@@ -118,14 +142,17 @@ class Chat(BaseModel):
                 'sources': []
             }
 
-from langchain_core.runnables import RunnableParallel
 
 class Query:
 
-    def __init__(self, query, db):
+    def __init__(self, query, vector_db_path, embedding_function):
         self.query = query
-        self.db = db
-        self.retriever = db.as_retriever(search_type="mmr")  #, search_kwargs={"k": 5})
+        self.db = vector_db_path
+        chroma = Chroma(
+            persist_directory=vector_db_path,
+            embedding_function=embedding_function
+        )
+        self.retriever = chroma.as_retriever(search_type="mmr")  # search_kwargs={"k": 5})
         self.prompt = hub.pull("rlm/rag-prompt")
         self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
@@ -145,7 +172,8 @@ class Query:
         ).assign(answer=rag_chain_from_docs)
 
         results = rag_chain_with_source.invoke(self.query)
-        results['sources'] = list({
+
+        results['sources'] = list({  # Get unique sources
             document.metadata['source'] for document in results['context']
         })
         return results
@@ -164,7 +192,7 @@ class Quiz:
         {context}
         \n
         CONTENT END
-        \n      
+        \n     
         {format_instructions}
     """
 
@@ -180,7 +208,7 @@ class Quiz:
             },
         )
         return prompt
-        
+
     def questions_from(self, context):
         model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.8)
 
@@ -205,9 +233,37 @@ class Quiz:
         output = chain.invoke({"context": context})
         self.qa = output['quiz']
         return self
-    
-    def save(self, db: sqlite3.dbapi2.Connection):
-        pass
+
+    def save(self, db_path, source):
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        for qa in self.qa:
+            cursor.execute('''
+                INSERT INTO quiz (question, answer, source) 
+                VALUES (?, ?, ?)
+            ''', (qa['question'], qa['answer'], source))
+        conn.commit()
+        conn.close()
+
+    @classmethod
+    def random_question(cls, db_path):
+        # The cls parameter refers to the class itself
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM quiz ORDER BY RANDOM() LIMIT 1')
+        row = cursor.fetchone()
+
+        if row is not None:
+            columns = [column[0] for column in cursor.description]
+            row_dict = dict(zip(columns, row))
+            return row_dict
+        else:
+            return {
+                'question': 'Noch keine Fragen...',
+                'answer': '',
+                'source': ''
+            }
+
 
 class AudioProcessor:
 
@@ -217,10 +273,11 @@ class AudioProcessor:
     model = "tiny"
     language = "de"
     segments: List = []
-    quiz:Quiz = None
+    quiz : Quiz = None
 
-    def __init__(self, file, align=False):
+    def __init__(self, file, source, align=False):
         logging.info("Transcribing audio file %s", file)
+        self.source = source
         model = whisperx.load_model(
             self.model,
             self.device,
@@ -268,36 +325,37 @@ class AudioProcessor:
         self.quiz = Quiz().questions_from(transcription)
         return self.quiz.qa
 
-    def save(self, db: Chroma):
+    def save(self, vector_db_path, embedding_function, sql_db_path):
         splits = []
         for segment in self.segments:
             splits.append(Document(
                 page_content=segment['text'],
                 metadata={
                     "start": segment['start'],
-                    "end": segment['end']
+                    "end": segment['end'],
+                    "source": self.source
                 }
             ))
 
         logging.info("Indexing audio splits with VectorStore")
-        db.from_documents(
+        Chroma.from_documents(
             documents=splits,
-            embedding=db.embeddings
+            embedding=embedding_function,
+            persist_directory=vector_db_path
         )
-        # self.quiz.save(db)
+        self.quiz.save(db_path=sql_db_path, source=self.source)
         return self._format_segments()
 
 
-
 class NewsProcessor:
-    
-    quiz:Quiz = None
 
-    def __init__(self, url):
+    quiz : Quiz = None
 
-        logging.info("Reading the news from %s", url)
+    def __init__(self, source):
+        self.source = source
+        logging.info("Reading the news from %s", source)
         loader = WebBaseLoader(
-            web_paths=[url],
+            web_paths=[source],
             bs_kwargs=dict(
                 parse_only=bs4.SoupStrainer('article')
             ),
@@ -312,18 +370,20 @@ class NewsProcessor:
 
     def _format_docs(self, docs):
         return "\n\n".join(doc.page_content for doc in docs)
-    
+
     def generate_questions(self):
         context = self._format_docs(self.splits)
         self.quiz = Quiz().questions_from(context)
-        return self.quiz.qa 
+        return self.quiz.qa
 
-    def save(self, db: Chroma):
+    def save(self, vector_db_path, embedding_function, sql_db_path):
         logging.info("Indexing news article chunks with VectorStore")
-        db.from_documents(
+        Chroma.from_documents(
             documents=self.splits,
-            embedding=db.embeddings
+            embedding=embedding_function,
+            persist_directory=vector_db_path
         )
+        self.quiz.save(db_path=sql_db_path, source=self.source)
         return self._format_docs(self.splits)
 
 

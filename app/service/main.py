@@ -10,7 +10,8 @@ from app.service.assistant import (
     Message,
     NewsProcessor,
     AudioProcessor,
-    Query
+    Query,
+    Quiz
 )
 import os
 import shutil
@@ -22,6 +23,7 @@ from langchain_community.embeddings.sentence_transformer import (
 
 import sqlite3
 import random
+import json
 
 import whisperx
 # from faster_whisper import WhisperModel
@@ -33,23 +35,22 @@ logging.basicConfig(level=logging.INFO)
 """
 Starting storage
 """
-
-storage_dir = os.path.normpath(
+logging.info("Starting Chroma database")
+vector_db_dir = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "../../data/")
 )
 embedding_function = SentenceTransformerEmbeddings(
     model_name="all-MiniLM-L6-v2"
 )
-vector_store = chromadb.PersistentClient(path=storage_dir)
-langchain_chroma = Chroma(
-    client=vector_store,
-    embedding_function=embedding_function,
+vector_store = chromadb.PersistentClient(path=vector_db_dir)
+
+logging.info("Starting SQLite database")
+sql_dir = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "../../data/quiz.db")
 )
 
-sql_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../data/quiz.db"))
-sql_conn = sqlite3.connect(sql_dir)
-
 def init_db():
+    sql_conn = sqlite3.connect(sql_dir)
     cursor = sql_conn.cursor()
 
     cursor.execute('''
@@ -134,7 +135,8 @@ async def send_message(
 
     reply = chats[chat_id].send(
         message=message,
-        db=langchain_chroma
+        vector_db_path=vector_db_dir,
+        embedding_function=embedding_function
     )
     logging.info("Reply: %s", reply)
     context = {
@@ -162,9 +164,13 @@ async def audio(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        processed_audio = AudioProcessor(file=file_path)
-        segments = processed_audio.save(db=langchain_chroma)
+        processed_audio = AudioProcessor(file=file_path, source=file.filename)
         qa = processed_audio.generate_questions()
+        segments = processed_audio.save(
+            vector_db_path=vector_db_dir, 
+            embedding_function=embedding_function,
+            sql_db_path=sql_dir
+        )
 
         return JSONResponse(
             content={
@@ -184,9 +190,15 @@ async def news(request: Request):
     if not url:
         return JSONResponse(content={"error": "No url sent"}, status_code=400)
     else:
-        processed_news = NewsProcessor(url=url)
-        text = processed_news.save(db=langchain_chroma)
+
+        processed_news = NewsProcessor(source=url)
         qa = processed_news.generate_questions()
+        text = processed_news.save(
+            vector_db_path=vector_db_dir, 
+            embedding_function=embedding_function, 
+            sql_db_path=sql_dir
+        )
+
         return JSONResponse(
             content={
                 "url": url,
@@ -197,10 +209,47 @@ async def news(request: Request):
         )
 
 @app.get("/query/")
-async def find(query: str):
+async def query(query: str):
 
     if query == "":
         return JSONResponse(content={"error": "Empty query"}, status_code=400)
     else:
-        query = Query(query=query, db=langchain_chroma)
+        query = Query(
+            query=query,
+            vector_db_path=vector_db_dir,
+            embedding_function=embedding_function
+        )
         return JSONResponse(content={"answer": query.answer()}, status_code=200)
+
+@app.get("/quiz/")
+async def question():
+    quiz = Quiz.random_question(db_path=sql_dir)
+    return JSONResponse(content=quiz, status_code=200)
+
+
+@app.post("/chats/{chat_id}/quiz/")
+async def quiz(
+    request: Request,
+    chat_id: int
+):
+    if chat_id not in chats:
+        raise HTTPException(status_code=404, detail="Chat not found")
+
+    quiz = Quiz.random_question(db_path=sql_dir)
+    message = Message(content="@quiz " + quiz['question'])
+    message.add_source(quiz['source'])
+
+    logging.info("Quiz: %s", quiz)
+    reply = chats[chat_id].send(
+        message=message,
+        vector_db_path=vector_db_dir,
+        embedding_function=embedding_function
+    )
+    context = {
+        "request": request,
+        "user_message": reply["question"],
+        "ai_message": reply["answer"],
+        "sources": reply["sources"],
+    }
+
+    return templates.TemplateResponse("partials/message.html", context)
