@@ -16,17 +16,11 @@ from app.service.assistant import (
 import os
 import shutil
 import chromadb
-from langchain_chroma import Chroma
 from langchain_community.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddings
 )
 
 import sqlite3
-import random
-import json
-
-import whisperx
-# from faster_whisper import WhisperModel
 
 from dotenv import load_dotenv
 load_dotenv()

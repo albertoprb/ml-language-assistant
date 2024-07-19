@@ -1,0 +1,59 @@
+name: language-assistant
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.12.0
+
+  # Data Analysis & visualization
+  - debugpy
+  - pandas=2.2.1
+  - numpy=1.26.4
+
+  # Data Ingestion
+  - beautifulsoup4=4.12.3
+
+  # RAG
+  - langchain
+  - langchain-openai
+  - langchain-groq
+  - langchain-community
+  - sentence-transformers
+
+  # API
+  - fastapi=0.110.0
+  - python-multipart
+  - uvicorn=0.28.0
+  - gunicorn=21.2.0
+  - jinja2=3.1.3
+
+  # Transcription (using pytorch channel as priority)
+  - pytorch::pytorch=2.3.0
+  - pytorch::torchvision=0.18.0
+  - pytorch::torchaudio=2.3.0
+  - pytorch::cpuonly
+
+  # Machine learning
+  # - scikit-learn==1.4
+  # - tensorflow==2.16.1
+  # - keras==3.0.5
+  # - xgboost==2.0.3
+
+  - pip
+  - pip:
+      # RAG
+      - langchain-chroma
+
+      # Transcription
+      - git+https://github.com/m-bain/whisperx.git
+# Commands
+
+# Create a new environment
+# conda env create -f environment.yml
+
+# Update an existing environment
+# conda env update -f environment.yml
+
+# Clean up existing environment to only use selected packages
+# conda env update -f environment.yml --prune

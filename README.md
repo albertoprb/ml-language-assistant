@@ -81,6 +81,35 @@ Currently the app has:
 
 The app has been deployed to fly.io using Docker for demonstration.
 
+## How to run
+
+Install python dependencies
+```
+conda env create -f environment.yml
+```
+or
+```
+conda env update -f environment.yml
+```
+
+Install node dependencies (tailwind, preline)
+```
+sudo apt update && sudo apt install -y nodejs npm
+cd ./app
+npm install
+```
+
+Add private key to .env file
+```
+cp .env-sample .env
+```
+Then edit the .env file and add your OpenAI/Groq API key.
+
+Run the app
+```
+uvicorn app.service.main:app --host 0.0.0.0 --port 8080 --reload
+```
+
 ## :dependabot: Architecture
 
 ![Architecture](architecture.png)

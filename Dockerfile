@@ -20,7 +20,7 @@ COPY ./ ./
 
 # Run FastAPI server
 CMD ["uvicorn", "app.service.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
-# uvicorn dashboard.service.main:app --host 0.0.0.0 --port 8080 --reload
+# uvicorn app.service.main:app --host 0.0.0.0 --port 8080 --reload
 
 
 # Docker commands

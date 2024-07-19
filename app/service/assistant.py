@@ -7,15 +7,12 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import (
     ChatPromptTemplate,
     MessagesPlaceholder,
-    PromptTemplate
+    PromptTemplate,
 )
 from langchain_core.documents import Document
 from langchain.memory import ChatMessageHistory
 
-from langchain_community.document_loaders import (
-    WebBaseLoader,
-    AsyncChromiumLoader
-)
+from langchain_community.document_loaders import WebBaseLoader
 import bs4
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -34,7 +31,6 @@ import sqlite3
 import whisperx
 
 import logging
-import json
 from langchain_core.runnables import RunnableParallel
 
 
@@ -63,9 +59,9 @@ class Message(BaseModel):
         )
 
         return prompt
-    
+
     def add_source(self, source):
-        self.metadata['source'] = source
+        self.metadata["source"] = source
 
     def is_quiz(self):
         return "@quiz" in self.content
@@ -75,84 +71,71 @@ class Message(BaseModel):
 
 
 class Chat(BaseModel):
-
     id: int
     messages: List[Message]
     llm: ChatOpenAI = Field(
-        default_factory=lambda: ChatOpenAI(
-            model="gpt-3.5-turbo-1106",
-            temperature=0.2
-        )
+        default_factory=lambda: ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.2)
     )
 
-    history: ChatMessageHistory = Field(
-        default_factory=ChatMessageHistory
-    )
+    history: ChatMessageHistory = Field(default_factory=ChatMessageHistory)
 
-    def send(
-        self,
-        message: Message,
-        vector_db_path,
-        embedding_function
-    ):
-
+    def send(self, message: Message, vector_db_path, embedding_function):
         if message.is_query():
             answer = Query(
                 query=message.content,
                 vector_db_path=vector_db_path,
-                embedding_function=embedding_function).answer()
+                embedding_function=embedding_function,
+            ).answer()
 
             self.history.add_user_message(message.content)
-            self.history.add_ai_message(AIMessage(
-                content=answer['answer'],
-                response_metadata={
-                    "sources": list(answer['sources'])
-                }
-            ))
+            self.history.add_ai_message(
+                AIMessage(
+                    content=answer["answer"],
+                    response_metadata={"sources": list(answer["sources"])},
+                )
+            )
             return {
-                'question': message.content,
-                'answer': answer['answer'],
-                'sources': answer['sources']
+                "question": message.content,
+                "answer": answer["answer"],
+                "sources": answer["sources"],
             }
         elif message.is_quiz():
             funny_quiz = "Guten Tag, Quizmaster! Los geht's!"
             self.history.add_user_message(funny_quiz)
-            self.history.add_ai_message(AIMessage(
-                content=message.content,
-                response_metadata={
-                    "sources": [message.metadata['source']]
-                }
-            ))
+            self.history.add_ai_message(
+                AIMessage(
+                    content=message.content,
+                    response_metadata={"sources": [message.metadata["source"]]},
+                )
+            )
             return {
-                'question': funny_quiz,
-                'answer': message.content,
-                'sources': [message.metadata['source']]
+                "question": funny_quiz,
+                "answer": message.content,
+                "sources": [message.metadata["source"]],
             }
         else:
             chain = message.prompt() | self.llm
-            ai_message = chain.invoke(
-                {"messages": self.history.messages}
-            )
+            ai_message = chain.invoke({"messages": self.history.messages})
 
             self.history.add_user_message(message.content)
             self.history.add_ai_message(ai_message.content)
             return {
-                'question': message.content,
-                'answer': ai_message.content,
-                'sources': []
+                "question": message.content,
+                "answer": ai_message.content,
+                "sources": [],
             }
 
 
 class Query:
-
     def __init__(self, query, vector_db_path, embedding_function):
         self.query = query
         self.db = vector_db_path
         chroma = Chroma(
-            persist_directory=vector_db_path,
-            embedding_function=embedding_function
+            persist_directory=vector_db_path, embedding_function=embedding_function
         )
-        self.retriever = chroma.as_retriever(search_type="mmr")  # search_kwargs={"k": 5})
+        self.retriever = chroma.as_retriever(
+            search_type="mmr"
+        )  # search_kwargs={"k": 5})
         self.prompt = hub.pull("rlm/rag-prompt")
         self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 
@@ -161,7 +144,9 @@ class Query:
 
     def answer(self):
         rag_chain_from_docs = (
-            RunnablePassthrough.assign(context=(lambda x: self._format_docs(x["context"])))
+            RunnablePassthrough.assign(
+                context=(lambda x: self._format_docs(x["context"]))
+            )
             | self.prompt
             | self.llm
             | StrOutputParser()
@@ -173,9 +158,11 @@ class Query:
 
         results = rag_chain_with_source.invoke(self.query)
 
-        results['sources'] = list({  # Get unique sources
-            document.metadata['source'] for document in results['context']
-        })
+        results["sources"] = list(
+            {  # Get unique sources
+                document.metadata["source"] for document in results["context"]
+            }
+        )
         return results
 
 
@@ -203,9 +190,7 @@ class Quiz:
         prompt = PromptTemplate(
             template=self.prompt_template,
             input_variables=["context"],
-            partial_variables={
-                "format_instructions": format_instructions
-            },
+            partial_variables={"format_instructions": format_instructions},
         )
         return prompt
 
@@ -222,7 +207,7 @@ class Quiz:
                         "answer": "Answer using content and passages"
                     }]
                 """,
-                type="array(objects)"
+                type="array(objects)",
             )
         ]
 
@@ -231,17 +216,20 @@ class Quiz:
 
         chain = prompt | model | parser
         output = chain.invoke({"context": context})
-        self.qa = output['quiz']
+        self.qa = output["quiz"]
         return self
 
     def save(self, db_path, source):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         for qa in self.qa:
-            cursor.execute('''
+            cursor.execute(
+                """
                 INSERT INTO quiz (question, answer, source) 
                 VALUES (?, ?, ?)
-            ''', (qa['question'], qa['answer'], source))
+            """,
+                (qa["question"], qa["answer"], source),
+            )
         conn.commit()
         conn.close()
 
@@ -250,7 +238,7 @@ class Quiz:
         # The cls parameter refers to the class itself
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM quiz ORDER BY RANDOM() LIMIT 1')
+        cursor.execute("SELECT * FROM quiz ORDER BY RANDOM() LIMIT 1")
         row = cursor.fetchone()
 
         if row is not None:
@@ -258,22 +246,17 @@ class Quiz:
             row_dict = dict(zip(columns, row))
             return row_dict
         else:
-            return {
-                'question': 'Noch keine Fragen...',
-                'answer': '',
-                'source': ''
-            }
+            return {"question": "Noch keine Fragen...", "answer": "", "source": ""}
 
 
 class AudioProcessor:
-
     device = "cpu"
     batch_size = 16
     compute_type = "int8"
     model = "tiny"
     language = "de"
     segments: List = []
-    quiz : Quiz = None
+    quiz: Quiz = None
 
     def __init__(self, file, source, align=False):
         logging.info("Transcribing audio file %s", file)
@@ -282,21 +265,20 @@ class AudioProcessor:
             self.model,
             self.device,
             language=self.language,
-            compute_type=self.compute_type
+            compute_type=self.compute_type,
         )
 
         audio = whisperx.load_audio(file=file)
         output = model.transcribe(audio=audio, batch_size=self.batch_size)
 
         if align:
-            self.segments = self.align(file, output)['segments']
+            self.segments = self.align(file, output)["segments"]
         else:
             self.segments = output["segments"]
 
     def align(self, file, transcription_output):
         model_a, metadata = whisperx.load_align_model(
-            language_code=transcription_output["language"],
-            device=self.device
+            language_code=transcription_output["language"], device=self.device
         )
 
         output = whisperx.align(
@@ -305,7 +287,7 @@ class AudioProcessor:
             metadata,
             file,
             self.device,
-            return_char_alignments=False
+            return_char_alignments=False,
         )
 
         return output
@@ -313,9 +295,9 @@ class AudioProcessor:
     def _format_segments(self):
         def to_text(segment):
             return "[%.2fs -> %.2fs] %s" % (
-                segment['start'],
-                segment['end'],
-                segment['text']
+                segment["start"],
+                segment["end"],
+                segment["text"],
             )
 
         return "\n".join(to_text(seg) for seg in self.segments)
@@ -328,44 +310,41 @@ class AudioProcessor:
     def save(self, vector_db_path, embedding_function, sql_db_path):
         splits = []
         for segment in self.segments:
-            splits.append(Document(
-                page_content=segment['text'],
-                metadata={
-                    "start": segment['start'],
-                    "end": segment['end'],
-                    "source": self.source
-                }
-            ))
+            splits.append(
+                Document(
+                    page_content=segment["text"],
+                    metadata={
+                        "start": segment["start"],
+                        "end": segment["end"],
+                        "source": self.source,
+                    },
+                )
+            )
 
         logging.info("Indexing audio splits with VectorStore")
         Chroma.from_documents(
             documents=splits,
             embedding=embedding_function,
-            persist_directory=vector_db_path
+            persist_directory=vector_db_path,
         )
         self.quiz.save(db_path=sql_db_path, source=self.source)
         return self._format_segments()
 
 
 class NewsProcessor:
-
-    quiz : Quiz = None
+    quiz: Quiz = None
 
     def __init__(self, source):
         self.source = source
         logging.info("Reading the news from %s", source)
         loader = WebBaseLoader(
             web_paths=[source],
-            bs_kwargs=dict(
-                parse_only=bs4.SoupStrainer('article')
-            ),
+            bs_kwargs=dict(parse_only=bs4.SoupStrainer("article")),
         )
         docs = loader.load()
 
         logging.info("Splitting news article into chunks of 500 characters")
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=500, chunk_overlap=0
-        )
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
         self.splits = text_splitter.split_documents(docs)
 
     def _format_docs(self, docs):
@@ -381,13 +360,12 @@ class NewsProcessor:
         Chroma.from_documents(
             documents=self.splits,
             embedding=embedding_function,
-            persist_directory=vector_db_path
+            persist_directory=vector_db_path,
         )
         self.quiz.save(db_path=sql_db_path, source=self.source)
         return self._format_docs(self.splits)
 
 
 class TextProcessor:
-
     def __init__(self):
         pass
